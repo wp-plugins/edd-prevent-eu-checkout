@@ -3,7 +3,7 @@
 Plugin Name: EDD - Prevent Checkout for the EU
 Plugin URI: https://github.com/Ipstenu/edd-prevent-eu-checkout
 Description: Prevents customer from being able to checkout if they're from the EU because VAT laws are stupid.
-Version: 1.0
+Version: 1.0.2
 Author: Andrew Munro (Sumobi), Mika A. Epstein (Ipstenu)
 Author URI: http://sumobi.com/
 License: GPL-2.0+
@@ -16,9 +16,6 @@ Forked from http://sumobi.com/shop/edd-prevent-checkout/
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) { wp_die( __( 'Cheatin&#8217; uh?' ) ); }
-
-// Exit if EDD isn't active
-if ( !class_exists( 'Easy_Digital_Downloads' ) ) { wp_die( __( 'This plugin requires you to have Easy Digital Downloads installed and active.' ) ); }
 
 /* The Acutal Plugin */
 
@@ -303,10 +300,10 @@ if ( ! class_exists( 'EDD_Prevent_EU_Checkout' ) ) {
 		*/
 		function eu_get_dates() {
 
-			$baddates = false;
+			$baddates = FALSE;
 
-			if( time() > strtotime("01-01-2015") ) {
-				$baddates = true;
+			if( strtotime("01/01/2015") <= time() ) {
+				$baddates = TRUE;
 			}
 
 			return $baddates;
@@ -350,10 +347,10 @@ if ( ! class_exists( 'EDD_Prevent_EU_Checkout' ) ) {
 		*/
 		function can_checkout( $can_checkout  ) {
 
-			$can_checkout = true;
+			$can_checkout = TRUE;
 
 			if ( $this->block_eu_required() == TRUE ) {
-				$can_checkout = false;
+				$can_checkout = FALSE;
 			}
 
 			return $can_checkout;
@@ -410,17 +407,14 @@ if ( ! class_exists( 'EDD_Prevent_EU_Checkout' ) ) {
 		 *
 		 * @since 1.0
 		*/
-
 		function custom_checkout_fields() {
 
-			global $edd_options;
-
-			$checkbox = isset( $edd_options['edd_pceu_checkbox'] ) ? $edd_options['edd_pceu_checkbox'] : '';
-			if ( $checkbox == TRUE ) {
+			// If the plugin is running and the dates are okay
+			if ( $this->eu_get_running() == TRUE && $this->eu_get_dates() == TRUE ) {
 				?>
 				<p id='edd-eu-wrap'>
 					<label class='edd-label' for='edd-eu'><?php _e('EU VAT Compliance Confirmation', 'edd-prevent-eu-checkout', 'edd-prevent-eu-checkout'); ?></label>
-					<span class='edd-description'><input class='edd-checkbox' type='checkbox' id='edd-eu' value='1' /> <?php _e('By checking this box you confirm you are either a business or not a legal EU resident.', 'edd-prevent-eu-checkout', 'edd-prevent-eu-checkout'); ?></span>
+					<span class='edd-description'><input class='edd-checkbox' type='checkbox' name='edd_eu' id='edd-eu' value='1' /> <?php _e('By checking this box you confirm you are either a business or not a legal EU resident.', 'edd-prevent-eu-checkout', 'edd-prevent-eu-checkout'); ?></span>
 				</p>
 				<?php
 			}
@@ -471,7 +465,7 @@ if ( ! class_exists( 'EDD_Prevent_EU_Checkout' ) ) {
 					'name' => __( 'General Message', 'edd-prevent-eu-checkout' ),
 					'desc' => __( 'Will be displayed at the top of every page where downloads are shown.', 'edd-prevent-eu-checkout' ),
 					'type' => 'textarea',
-					'std' => 'At this time we are unable to complete sales to EU residents. <a href='#'>Why?</a>'
+					'std' => 'At this time we are unable to complete sales to EU residents. <a href="#">Why?</a>'
 				),
 
 				array(
@@ -479,7 +473,7 @@ if ( ! class_exists( 'EDD_Prevent_EU_Checkout' ) ) {
 					'name' => __( 'Checkout Message', 'edd-prevent-eu-checkout' ),
 					'desc' => __( 'Will be displayed on attempt to checkout by someone in the EU.', 'edd-prevent-eu-checkout' ),
 					'type' => 'textarea',
-					'std' => 'At this time we are unable to complete sales to EU residents. <a href='#'>Why?</a>'
+					'std' => 'At this time we are unable to complete sales to EU residents. <a href="#">Why?</a>'
 				),
 
 				array(
@@ -537,7 +531,23 @@ if ( ! class_exists( 'EDD_Prevent_EU_Checkout' ) ) {
  * @access private
  * @return void
  */
+
+if ( !class_exists( 'Easy_Digital_Downloads' ) ) {
+	// We can't activate so let's throw a warning
+	 add_action( 'admin_notices', 'edd_prevent_eu_checkout_admin_notice' );
+} else {
+	// We can load! Let's do this thing!
+	add_action( 'plugins_loaded', 'edd_prevent_eu_checkout_load' );
+}
+
+function edd_prevent_eu_checkout_admin_notice() {
+    ?>
+    <div class="error">
+        <p><?php _e( 'EDD Prevent EU Checkout cannot run without EDD installed.', 'edd-prevent-eu-checkout' ); ?></p>
+    </div>
+    <?php
+}
+
 function edd_prevent_eu_checkout_load() {
 	$edd_prevent_checkout = new EDD_Prevent_EU_Checkout();
 }
-add_action( 'plugins_loaded', 'edd_prevent_eu_checkout_load' );
