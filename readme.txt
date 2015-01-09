@@ -4,7 +4,7 @@ Donate link: https://store.halfelf.org/donate/
 Tags: easy digital downloads, edd, purchase, prevent, checkout, e-commerce, eu, VAT
 Requires at least: 3.3
 Tested up to: 4.1
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,10 @@ Basically there's no 100% free way to check for this stuff. The checkout box at 
 
 If the plugin cannot detect where you're from, it gives you a country code of 00 and subsequently blocks buy-now. You can customize the text in the plugin settings.
 
+= Why does the checkbox show up twice? =
+
+The EU VAT Compliance Confirmation shows up twice, once for user registration and once for personal info, if you have "Display the registration and login forms on the checkout page for non-logged-in users." set to anything but none. This is because EDD didn't make the filter only affect one section. This will be fixed in EDD 2.3 (see (#2857)[https://github.com/easydigitaldownloads/Easy-Digital-Downloads/issues/2857]), but is something you'll have to live with for now, as rewriting that whole function is tricky to make it work for all users.
+
 = How can I use the GeoIP DB? =
 
 Create a folder in `wp-content` called `edd-pec-geoip`
@@ -102,6 +106,9 @@ In that put the file `GeoLite2-Country.mmdb` (downloadable from [Maxmind](http:/
 ''NOTICE'' That database is licensed Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0), which means you are required to credit them on your site. It also means I can't include the code here, and I'm not responsible for your updates.
 
 == Changelog ==
+
+= 1.0.7 =
+* Hide payment selection too, if you're in the EU (props @tctc91)
 
 = 1.0.6 =
 * Removed Mediawiki - Slow and weird results in the long term.
